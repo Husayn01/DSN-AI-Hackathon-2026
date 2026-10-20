@@ -9,6 +9,13 @@ Data/nga_pop_2020_CN_100m.tif
 # Schools shapefile — too large (.dbf is 95.8 MB)
 Data/Schools_in_Nigeria/
 
+# Settlement extents — too large (1.08 GB GDB)
+Data/GRID3_NGA_settlement_extents*
+*.gdb/
+
+# Local cache directory (contains blocks.parquet 88.8 MB)
+cache/
+
 # === OUTPUTS (generated artefacts) ===
 # PNGs saved beside the notebook are excluded; commit outputs/ folder contents manually
 notebooks/*.png
