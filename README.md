@@ -49,6 +49,20 @@ Ookla speed tiles exist only where someone ran a speed test, so a map of speeds 
 3. Open `notebooks/analysis.ipynb` and run it from the `notebooks/` folder.
 4. Optional: set `QUICK_RUN = True` in the settings cell to test the pipeline on the first 500,000 settlement blocks. The full run takes several minutes and caches its main result in `cache/`.
 
+### Interactive Web Application & Decision Platform
+
+To launch the interactive geospatial web dashboard locally:
+
+```bash
+python run_web.py
+```
+
+This will automatically serve `outputs/web/` at `http://localhost:8000` and open it in your browser. The platform includes:
+* **Interactive Map**: LGAs coloured by priority class, with rich tooltips, Moran's I spatial clusters, top 100 tower siting circles, and clustered health & education facilities.
+* **KPI Metrics**: Dynamic unmeasured share, count of priority LGAs, underserved health sites, and population reached by top $N$ upgrades.
+* **Interactive Controls**: State/Zone filters, priority score slider, and tower upgrade count slider ($N=1\dots100$).
+* **Analytics Tabs**: Top 20 LGAs by component breakdown, State rankings chart, tower siting curve, and searchable LGA table with click-to-zoom.
+
 ## Data sources
 
 Accessed 20 October 2026.
