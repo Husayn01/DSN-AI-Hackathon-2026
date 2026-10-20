@@ -1,0 +1,41 @@
+# === EXCLUDED DATA FILES ===
+# CSV duplicate (use the GeoPackage instead)
+Nigeria Ookla.csv
+"Nigeria Ookla.csv"
+
+# Population raster — too large (150 MB)
+Data/nga_pop_2020_CN_100m.tif
+
+# Schools shapefile — too large (.dbf is 95.8 MB)
+Data/Schools_in_Nigeria/
+
+# === PYTHON ===
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# === JUPYTER ===
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# === ENV / SECRETS ===
+.env
+*.env.*
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === EDITORS ===
+.vscode/
+.idea/
+*.swp
+*.swo
