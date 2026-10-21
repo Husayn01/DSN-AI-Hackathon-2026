@@ -79,7 +79,7 @@ const METRICS = {
 /* ---------- state ---------- */
 const D = {};   // loaded data and indexes
 const U = {     // user interface state
-  view: 'overview',
+  view: 'map',
   ovZone: '',
   level: 'auto', metric: 'priority', cls: 'quantile',
   f: { zone: '', state: '', classes: new Set(), setOnly: false },
@@ -1538,6 +1538,7 @@ async function start() {
   wireOverview(); renderNotice(); renderKPIs(); renderInsights(); renderTopLgas(); initCharts();
   wireMap(); wireRankings(); renderRankings(); renderMethod(); wireGlobal();
   $('#splash').hidden = true;
+  switchView('map', true);
   readHash();
   window.__atlas = { D, U, M, select: (l, i) => selectRec(recFor(l, i), { fly: true }), switchView };
 }

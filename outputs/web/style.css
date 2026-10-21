@@ -100,14 +100,19 @@ h1, h2, h3, h4, p { margin: 0; }
 .brand-mark { width: 24px; height: 24px; flex: none; color: var(--accent); }
 .brand-name { font-weight: 650; font-size: 14px; letter-spacing: -0.005em; white-space: nowrap; }
 .brand-sub { color: var(--text-3); font-size: 12px; white-space: nowrap; }
-.tabs { display: flex; gap: 2px; height: 100%; }
-.tab {
-  background: none; border: 0; height: 100%;
-  padding: 0 12px; color: var(--text-2); font-weight: 500;
-  border-bottom: 2px solid transparent; margin-bottom: -1px;
+.shell { display: flex; height: calc(100% - var(--topbar-h)); }
+.rail {
+  width: 68px; flex: none; display: flex; flex-direction: column; gap: 4px; padding: 10px 6px;
+  background: var(--surface); border-right: 1px solid var(--line); z-index: 20;
 }
-.tab:hover { color: var(--text); }
-.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 2px; border: 0; border-radius: var(--radius-sm);
+  background: none; color: var(--text-2); font-size: 11px; font-weight: 500; position: relative;
+}
+.tab svg { width: 20px; height: 20px; }
+.tab:hover { background: var(--surface-3); color: var(--text); }
+.tab[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); }
+.tab[aria-selected="true"]::before { content: ""; position: absolute; left: -6px; top: 8px; bottom: 8px; width: 2px; background: var(--accent); border-radius: 2px; }
 .topbar-spacer { flex: 1; }
 .top-actions { display: flex; align-items: center; gap: 6px; }
 .icon-btn {
@@ -118,7 +123,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .icon-btn svg { width: 17px; height: 17px; }
 
 /* Views */
-.app { height: calc(100% - var(--topbar-h)); position: relative; }
+.app { flex: 1; min-width: 0; height: 100%; position: relative; }
 .view { position: absolute; inset: 0; display: none; overflow: auto; }
 .view.active { display: block; }
 .view.map-view.active { display: grid; overflow: hidden; }
@@ -406,9 +411,10 @@ table.data td .pill { height: 18px; }
   .toggle-left { display: grid; bottom: auto; top: 54px; }
   .legend { bottom: 34px; max-width: 230px; }
   .filters-row { grid-template-columns: 1fr 1fr; }
-  .tabs .tab { padding: 0 9px; }
 }
 @media (max-width: 640px) {
+  .rail { width: 54px; padding: 8px 4px; }
+  .tab span { display: none; }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .page { padding: 14px 12px 40px; }
   .topbar { gap: 10px; padding: 0 10px; }

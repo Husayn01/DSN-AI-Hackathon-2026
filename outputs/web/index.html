@@ -20,15 +20,9 @@
       </svg>
       <div>
         <span class="brand-name">Nigeria Connectivity Priority Atlas</span>
-        <span class="brand-sub">&nbsp;DSN AI Bootcamp 2026 &bull; Team Terralytica</span>
+        <span class="brand-sub">&nbsp;DSN AI Bootcamp 2026</span>
       </div>
     </div>
-    <nav class="tabs" role="tablist" aria-label="Views">
-      <button class="tab" role="tab" data-view="overview" aria-selected="true">Overview</button>
-      <button class="tab" role="tab" data-view="map" aria-selected="false">Map</button>
-      <button class="tab" role="tab" data-view="rankings" aria-selected="false">Rankings</button>
-      <button class="tab" role="tab" data-view="method" aria-selected="false">Method and data</button>
-    </nav>
     <div class="topbar-spacer"></div>
     <div class="top-actions">
       <button class="icon-btn" id="themeBtn" title="Switch light and dark theme" aria-label="Switch light and dark theme">
@@ -37,11 +31,18 @@
     </div>
   </header>
 
+  <div class="shell">
+    <nav class="rail" role="tablist" aria-label="Views" aria-orientation="vertical">
+      <button class="tab" role="tab" data-view="map" aria-selected="true" title="Map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg><span>Map</span></button>
+      <button class="tab" role="tab" data-view="overview" aria-selected="false" title="Overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Overview</span></button>
+      <button class="tab" role="tab" data-view="rankings" aria-selected="false" title="Rankings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Rankings</span></button>
+      <button class="tab" role="tab" data-view="method" aria-selected="false" title="Method"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></svg><span>Method</span></button>
+    </nav>
   <main class="app" id="app">
     <div class="splash" id="splash">Loading data</div>
 
     <!-- Overview -->
-    <section class="view active" id="view-overview" aria-label="Overview">
+    <section class="view" id="view-overview" aria-label="Overview">
       <div class="page">
         <div class="page-head">
           <div>
@@ -134,7 +135,7 @@
     </section>
 
     <!-- Map -->
-    <section class="view map-view" id="view-map" aria-label="Map">
+    <section class="view map-view active" id="view-map" aria-label="Map">
       <aside class="side left" id="mapLeft" aria-label="Map controls">
         <div class="side-section">
           <h3>Area level</h3>
@@ -254,6 +255,7 @@
       </div>
     </section>
   </main>
+  </div>
 
   <div class="tip" id="tip" role="tooltip"></div>
   <script src="app.js"></script>
