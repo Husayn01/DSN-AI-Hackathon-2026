@@ -44,11 +44,11 @@ const RAMPS = {
 };
 const CLASS_COLORS = RAMPS.risk;
 const COMPONENTS = [
-  { key: 'service_gap', label: 'Service gap', color: '#2f6f9f', text: 'Share of settlement buildings that are unmeasured or below 10 Mbps.' },
+  { key: 'service_gap', label: 'Service gap', color: '#2f6f9f', text: 'Share of settlement buildings that are slow, or unmeasured and far from any tower.' },
   { key: 'exposure', label: 'Exposure', color: '#d98b2b', text: 'Estimated number of people living in underserved settlements.' },
   { key: 'infra_gap', label: 'Infrastructure gap', color: '#5b8c5a', text: 'Average distance from buildings to the nearest cell tower.' },
   { key: 'need', label: 'Need', color: '#8a5a9e', text: 'Lower Relative Wealth Index means higher need.' },
-  { key: 'institution_gap', label: 'Institution gap', color: '#b5483f', text: 'Share of schools and health facilities on unmeasured or slow tiles.' }
+  { key: 'institution_gap', label: 'Institution gap', color: '#b5483f', text: 'Share of schools and health facilities that are slow, or unmeasured and far from any tower.' }
 ];
 const ZONE_COLORS = { 'North Central': '#4c78a8', 'North East': '#f58518', 'North West': '#54a24b', 'South East': '#b279a2', 'South South': '#e45756', 'South West': '#72b7b2' };
 const CLUSTERS = [
@@ -60,14 +60,14 @@ const CLUSTERS = [
 ];
 const METRICS = {
   priority: { label: 'Priority index', fmt: fmt1, ramp: 'risk', desc: 'Weighted score of five components, 0 to 100. Higher means act sooner.' },
-  underserved_pop: { label: 'Underserved people', fmt: fmtCompact, ramp: 'risk', desc: 'Estimated people living in unmeasured or slow settlements.' },
-  underserved_share: { label: 'Underserved share of buildings', fmt: v => fmtPct(v), ramp: 'risk', desc: 'Buildings that are unmeasured or below 10 Mbps. Close to 100% almost everywhere, so use equal intervals or other metrics to see contrast.' },
+  underserved_pop: { label: 'Underserved people', fmt: fmtCompact, ramp: 'risk', desc: 'Estimated people living in underserved settlements.' },
+  underserved_share: { label: 'Underserved share of buildings', fmt: v => fmtPct(v), ramp: 'risk', desc: 'Buildings that are slow, or unmeasured and far from any recorded tower. If most areas fall in one class, switch to equal intervals.' },
   population: { label: 'Population', fmt: fmtCompact, ramp: 'good', desc: 'WorldPop 2020 population.' },
   mean_dist_tower_km: { label: 'Distance to nearest tower', fmt: fmtKm, ramp: 'risk', desc: 'Average distance from buildings to the nearest recorded cell tower.' },
   far_share: { label: 'Buildings over 5 km from a tower', fmt: v => fmtPct(v), ramp: 'risk', desc: 'Share of buildings farther than 5 km from any recorded tower.' },
   mean_rwi: { label: 'Relative Wealth Index', fmt: fmt2, ramp: 'good', desc: 'Modelled relative wealth. Lower values (lighter) mean poorer areas.' },
   mean_speed_mbps: { label: 'Measured download speed', fmt: fmtMbps, ramp: 'good', desc: 'Average of measured Ookla tiles only. Areas with no tiles are grey.' },
-  institution_share: { label: 'Institutions without measured service', fmt: v => fmtPct(v), ramp: 'risk', desc: 'Schools and health facilities on unmeasured or slow tiles.' },
+  institution_share: { label: 'Institutions without measured service', fmt: v => fmtPct(v), ramp: 'risk', desc: 'Schools and health facilities that are underserved.' },
   service_gap: { label: 'Component: service gap', fmt: fmtPctile, ramp: 'risk', desc: 'Percentile rank, 0 to 100.', comp: true },
   exposure: { label: 'Component: exposure', fmt: fmtPctile, ramp: 'risk', desc: 'Percentile rank, 0 to 100.', comp: true },
   infra_gap: { label: 'Component: infrastructure gap', fmt: fmtPctile, ramp: 'risk', desc: 'Percentile rank, 0 to 100.', comp: true },
@@ -75,6 +75,9 @@ const METRICS = {
   institution_gap: { label: 'Component: institution gap', fmt: fmtPctile, ramp: 'risk', desc: 'Percentile rank, 0 to 100.', comp: true },
   top_decile_freq: { label: 'Robustness: top-decile frequency', fmt: v => fmtPct(v, 0), ramp: 'risk', desc: 'Share of 1,000 random weightings that put the LGA in the national top 10%. LGA level only.', lgaOnly: true }
 };
+
+const slowMbps = () => (D.summary && D.summary.parameters && D.summary.parameters.slow_speed_mbps) || 10;
+const nearKm = () => D.summary && D.summary.parameters && D.summary.parameters.near_tower_km;
 
 /* ---------- state ---------- */
 const D = {};   // loaded data and indexes
@@ -276,7 +279,7 @@ function rankTotal(level) { return D.byLevel[level].length; }
 /* =====================================================================
    MAP: canvas renderer, interaction, legend, detail panel
    ===================================================================== */
-const stage = $('#stage'), canvas = $('#mapCanvas'), ctx = canvas.getContext('2d');
+const stage = $('#canvasWrap'), canvas = $('#mapCanvas'), ctx = canvas.getContext('2d');
 const M = { w: 0, h: 0, dpr: 1, view: { cx: 0.52, cy: 0.5, z: 5 }, fitZ: 6, raf: 0, anim: null, tiles: new Map(), level: 'state', legendKey: '', needFit: true };
 let T = {};
 
@@ -780,7 +783,7 @@ function renderDetail() {
     ['Buildings', fmtInt(p.buildings)],
     ['Underserved buildings', fmtPct(p.underserved_share)],
     ['Unmeasured buildings', fmtPct(p.unmeasured_share)],
-    ['Below 10 Mbps', fmtPct(p.slow_share)],
+    ['Below ' + slowMbps() + ' Mbps', fmtPct(p.slow_share)],
     ['Measured download', isNum(p.mean_speed_mbps) ? fmtMbps(p.mean_speed_mbps) : 'No tiles'],
     ['Distance to nearest tower', fmtKm(p.mean_dist_tower_km)],
     ['Buildings over 5 km from a tower', fmtPct(p.far_share)],
@@ -843,7 +846,7 @@ function showFacilityDetail(f) {
   $('#view-map').classList.add('has-detail');
   el.innerHTML = detailHead((p.kind === 'school' ? 'School' : 'Health facility') + ' &middot; ' + esc(p.lga), p.name || 'Unnamed') +
     '<div class="detail-body"><div class="d-sec">' + dl([['Type', esc(p.level || 'Unknown')], ['Owner', esc(p.owner || 'Unknown')], ['Connectivity', esc(p.status)], ['Students', isNum(p.students) ? fmtInt(p.students) : 'Not recorded']]) +
-    '<p class="note">Status comes from the Ookla tile the facility sits in: unmeasured or below 10 Mbps.</p></div>' +
+    '<p class="note">Status comes from the Ookla tile the facility sits in: slow, or unmeasured and far from a tower.</p></div>' +
     '<div class="d-sec"><button class="btn small" data-act="lga:' + p.lga_id + '" style="justify-self:start">Open LGA</button></div></div>';
   setTimeout(syncSize, 0);
   requestDraw();
@@ -958,7 +961,10 @@ function renderKPIs() {
 function renderNotice() {
   const all = D.lgas, b = sum(all, r => r.p.buildings), um = sum(all, r => r.p.buildings * (r.p.unmeasured_share || 0)) / b;
   const slow = D.summary.parameters.slow_speed_mbps;
-  $('#ovNoticeText').innerHTML = '<b>How to read &ldquo;underserved&rdquo;.</b> ' + fmtPct(um, 0) + ' of settlement buildings sit outside any Ookla speed-test tile. We count them as <i>unmeasured</i>, never fill them with estimated speeds, and call a building underserved when it is unmeasured or below ' + slow + ' Mbps. Unmeasured signals weak or absent use, not proof of no signal.';
+  const nk = nearKm();
+  const rule = nk ? 'We call a building underserved when its measured speed is below ' + slow + ' Mbps, or when it is unmeasured and more than ' + nk + ' km from any recorded tower. Unmeasured buildings near a tower are treated as uncertain, not underserved.'
+    : 'We call a building underserved when it is unmeasured or below ' + slow + ' Mbps.';
+  $('#ovNoticeText').innerHTML = '<b>How to read &ldquo;underserved&rdquo;.</b> ' + fmtPct(um, 0) + ' of settlement buildings sit outside any Ookla speed-test tile. We count them as <i>unmeasured</i> and never fill them with estimated speeds. ' + rule + ' Unmeasured signals weak or absent use, not proof of no signal.';
 }
 
 function renderInsights() {
@@ -1026,15 +1032,15 @@ function initCharts() {
       const y = i * rh, un = r.unmeasured_share, fast = r.served_share, slow = r.slow_share;
       s += '<text class="strong" x="0" y="' + (y + 12) + '">' + esc(names[r.ext] || r.ext) + '</text><text x="' + w + '" y="' + (y + 12) + '" text-anchor="end">' + fmtCompact(r.buildings) + ' buildings</text>';
       let x = 0;
-      [[fast, '#3a7d5c', 'Meets 10 Mbps'], [slow, '#e0a030', 'Measured, slow'], [un, '#b9c0c8', 'Unmeasured']].forEach(([v, c, nm]) => {
+      [[fast, '#3a7d5c', 'Meets ' + slowMbps() + ' Mbps'], [slow, '#e0a030', 'Measured, slow'], [un, '#b9c0c8', 'Unmeasured']].forEach(([v, c, nm]) => {
         s += '<rect x="' + x + '" y="' + (y + 20) + '" width="' + Math.max(0, w * v) + '" height="16" style="fill:' + c + '"' + tipAttr('<b>' + esc(names[r.ext] || r.ext) + '</b>' + tipRow(nm, fmtPct(v, 2))) + '/>';
         x += w * v;
       });
-      s += '<text x="0" y="' + (y + 52) + '">' + fmtPct(un, 1) + ' unmeasured, ' + fmtPct(fast, 1) + ' meet 10 Mbps. Tower ' + fmtKm(r.mean_dist_tower_km) + ' away</text>';
+      s += '<text x="0" y="' + (y + 52) + '">' + fmtPct(un, 1) + ' unmeasured, ' + fmtPct(fast, 1) + ' meet ' + slowMbps() + ' Mbps. Tower ' + fmtKm(r.mean_dist_tower_km) + ' away</text>';
     });
     return s + '</svg>';
   });
-  $('#lgSettle').innerHTML = [['#3a7d5c', 'Meets 10 Mbps'], ['#e0a030', 'Measured, slow'], ['#b9c0c8', 'Unmeasured']].map(x => '<span><i style="background:' + x[0] + '"></i>' + x[1] + '</span>').join('');
+  $('#lgSettle').innerHTML = [['#3a7d5c', 'Meets ' + slowMbps() + ' Mbps'], ['#e0a030', 'Measured, slow'], ['#b9c0c8', 'Unmeasured']].map(x => '<span><i style="background:' + x[0] + '"></i>' + x[1] + '</span>').join('');
 
   mountChart('chDist', w => {
     const bins = [[0, 1], [1, 2], [2, 5], [5, 10], [10, 20], [20, 50], [50, 1e9]];
@@ -1301,7 +1307,7 @@ function renderMethod() {
     '<h2 id="m-question">Question</h2><p>Which communities in Nigeria have poor internet connectivity relative to their population, settlements and socioeconomic needs, and where should improvements be prioritised first?</p>' +
     '<h2 id="m-approach">Approach</h2><p>Speed-test tiles exist only where someone ran a test, so a map of speeds alone shows who already has service. We start from where people live and ask what connectivity they have.</p><ol>' +
     '<li><b>Settlements and population.</b> GRID3 settlement blocks (building counts, settlement type) and WorldPop population show where people live.</li>' +
-    '<li><b>Service.</b> Each settlement block is matched to the Ookla tile it falls in. A block with no tile is <i>unmeasured</i>. We never fill it with estimated speeds.</li>' +
+    '<li><b>Service.</b> Each settlement block is matched to the Ookla tile it falls in. A block with no tile is <i>unmeasured</i>. We never fill it with estimated speeds. An unmeasured block counts as underserved only when it is far from any recorded tower.</li>' +
     '<li><b>Infrastructure and need.</b> Cell tower locations, the Relative Wealth Index, schools and health facilities add distance to the network, need and anchor institutions.</li>' +
     '<li><b>Priority index.</b> Five components are combined into a 0 to 100 score for every LGA, and the same score is computed for states and zones.</li>' +
     '<li><b>Spatial clusters.</b> Local Moran’s I finds groups of high-priority LGAs (Moran’s I ' + N.morans_i.toFixed(2) + ').</li>' +
@@ -1313,7 +1319,7 @@ function renderMethod() {
     '<table class="simple-table"><thead><tr><th>Alternative</th><th class="r">Spearman</th><th class="r">Top-50 overlap</th></tr></thead><tbody>' + robRows + '</tbody></table>' +
     '<h2 id="m-read">How to read the maps</h2><ul>' +
     '<li><b>Quantile classes</b> put about a fifth of areas in each colour, so colours show relative position. <b>Equal intervals</b> split the value range evenly and show how large the gaps are.</li>' +
-    '<li>The <b>underserved share</b> is close to 100% in most LGAs because most buildings are unmeasured. The service-gap component therefore separates areas weakly, and the other components carry more of the ranking.</li>' +
+    '<li>Most buildings are <b>unmeasured</b>, so the definition of underserved matters. The analysis reports how the share changes with the speed threshold and the tower-distance rule (see the sensitivity table in the notebook).</li>' +
     '<li>Zones, states and LGAs switch automatically as you zoom when the level is set to Auto.</li>' +
     '<li>The bold outline marks the priority set. Cluster mode replaces the colours with the Local Moran’s I classes.</li>' +
     '<li>Facility points are those inside priority-set LGAs. Upgrade sites are sized by the people they would newly reach.</li></ul>' +
@@ -1412,13 +1418,16 @@ function wireMap() {
   $('#cSites').textContent = D.sites.length;
 
   // search
-  const box = $('#searchBox'), res = $('#searchResults');
+  const box = $('#searchBox'), res = $('#searchResults'), wrap = $('#searchWrap');
+  const openSearch = () => { box.hidden = false; box.focus(); };
+  const closeSearch = () => { if (!box.value) box.hidden = true; res.hidden = true; };
+  $('#searchBtn').onclick = () => (box.hidden ? openSearch() : closeSearch());
   let hits = [], cur = -1;
   const show = () => {
     res.hidden = !hits.length;
     res.innerHTML = hits.map((h, i) => '<button data-i="' + i + '" class="' + (i === cur ? 'sel' : '') + '"><span>' + esc(h.name) + '</span><small>' + esc(h.sub) + '</small></button>').join('');
   };
-  const choose = h => { res.hidden = true; box.value = h.name; box.blur(); selectRec(h.rec, { fly: true }); };
+  const choose = h => { res.hidden = true; box.value = ''; box.hidden = true; box.blur(); selectRec(h.rec, { fly: true }); };
   box.addEventListener('input', () => { hits = runSearch(box.value); cur = hits.length ? 0 : -1; show(); });
   box.addEventListener('keydown', e => {
     if (e.key === 'ArrowDown') { cur = Math.min(hits.length - 1, cur + 1); show(); e.preventDefault(); }
@@ -1427,10 +1436,20 @@ function wireMap() {
     else if (e.key === 'Escape') { res.hidden = true; }
   });
   res.addEventListener('mousedown', e => { const b = e.target.closest('button'); if (b) { e.preventDefault(); choose(hits[+b.dataset.i]); } });
-  box.addEventListener('blur', () => setTimeout(() => { res.hidden = true; }, 120));
+  box.addEventListener('blur', () => setTimeout(closeSearch, 150));
+  void wrap;
 
-  $('#toggleLeft').onclick = () => { $('#view-map').classList.toggle('no-left'); setTimeout(syncSize, 0); };
-  if (innerWidth < 900) $('#view-map').classList.add('no-left');
+  const toggleLeft = () => {
+    const mv = $('#view-map'), hide = !mv.classList.contains('no-left');
+    mv.classList.toggle('no-left', hide);
+    $('#toggleLeft').setAttribute('aria-pressed', String(!hide));
+    syncSize();
+    if (!U.sel && !filtersActive()) setView(homeView());
+    requestDraw();
+  };
+  $('#toggleLeft').onclick = toggleLeft;
+  $('#closeLeft').onclick = toggleLeft;
+  if (innerWidth < 900) { $('#view-map').classList.add('no-left'); $('#toggleLeft').setAttribute('aria-pressed', 'false'); }
 }
 
 function wireOverview() {
