@@ -1,6 +1,6 @@
 # Mapping Nigeria's Digital Divide Through Geospatial Data
 
-DSN AI Bootcamp 2026, Geospatial Track.
+DSN AI Bootcamp 2026, Geospatial Track | **Team: Terralytica**
 
 ## The question
 
@@ -106,4 +106,4 @@ The analysis code in this repository is our own work for the DSN AI Bootcamp 202
 
 ## Team
 
-DSN AI Bootcamp 2026, Geospatial Track.
+**Terralytica** — DSN AI Bootcamp 2026, Geospatial Track.

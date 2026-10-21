@@ -19,11 +19,12 @@ def main():
     print(f"Serving web application from {WEB_DIR}")
     print(f"Opening browser at: http://localhost:{PORT}")
     
-    # Open default web browser
     webbrowser.open(f"http://localhost:{PORT}")
     
+    # Allow port reuse in case server was recently closed
+    socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", PORT), Handler) as httpd:
-        print("Web server running. Press Ctrl+C to stop.")
+        print(f"Web server running on http://localhost:{PORT}. Press Ctrl+C to stop.")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

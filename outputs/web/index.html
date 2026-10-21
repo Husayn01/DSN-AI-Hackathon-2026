@@ -1,291 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nigeria Digital Divide — Geospatial Decision Platform</title>
-  
-  <!-- Inter font -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nigeria Connectivity Priority Atlas</title>
+  <meta name="description" content="Where internet connectivity is weakest relative to population, settlements and need across Nigeria, and where to act first. DSN AI Bootcamp 2026, Geospatial Track.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <!-- Leaflet MarkerCluster CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
-  
-  <!-- Custom Style -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Top Application Header -->
-  <header>
+  <header class="topbar">
     <div class="brand">
-      <span class="brand-badge">DSN 2026</span>
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.6"/>
+        <circle cx="8" cy="9" r="1.7" fill="currentColor"/><circle cx="15.5" cy="8" r="1.7" fill="currentColor" opacity=".55"/>
+        <circle cx="11" cy="15.5" r="1.7" fill="currentColor" opacity=".8"/><circle cx="17" cy="15" r="1.7" fill="currentColor" opacity=".3"/>
+      </svg>
       <div>
-        <h1 class="brand-title">Nigeria Digital Divide — Geospatial Decision Platform</h1>
-        <p class="brand-sub">Community-Centric Connectivity Gap Assessment & Infrastructure Siting</p>
+        <span class="brand-name">Nigeria Connectivity Priority Atlas</span>
+        <span class="brand-sub">&nbsp;DSN AI Bootcamp 2026 &bull; Team Terralytica</span>
       </div>
     </div>
-    <div style="font-size: 0.78rem; color: var(--text-secondary); display: flex; gap: 14px; align-items: center;">
-      <span>Base data: <strong>Ookla Open Data</strong></span>
-      <span>•</span>
-      <span>Anchor: <strong>GRID3 Nigeria</strong></span>
-      <span>•</span>
-      <span>Population: <strong>WorldPop 100m</strong></span>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" role="tab" data-view="overview" aria-selected="true">Overview</button>
+      <button class="tab" role="tab" data-view="map" aria-selected="false">Map</button>
+      <button class="tab" role="tab" data-view="rankings" aria-selected="false">Rankings</button>
+      <button class="tab" role="tab" data-view="method" aria-selected="false">Method and data</button>
+    </nav>
+    <div class="topbar-spacer"></div>
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Switch light and dark theme" aria-label="Switch light and dark theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
     </div>
   </header>
 
-  <!-- KPI Summary Row -->
-  <section class="kpi-bar">
-    <div class="kpi-card" id="kpiCardUnmeasured">
-      <span class="kpi-label">Buildings Unmeasured</span>
-      <div class="kpi-value-row">
-        <span class="kpi-value" id="kpiUnmeasured">93.6%</span>
-      </div>
-      <span class="kpi-sub" id="kpiUnmeasuredSub">Outside any Ookla speed test tile</span>
-    </div>
+  <main class="app" id="app">
+    <div class="splash" id="splash">Loading data</div>
 
-    <div class="kpi-card" id="kpiCardPriorityLGAs">
-      <span class="kpi-label">Priority LGAs</span>
-      <div class="kpi-value-row">
-        <span class="kpi-value" id="kpiPriorityLGAs" style="color: #f87171;">155</span>
-        <span class="kpi-sub">/ 774 total</span>
-      </div>
-      <span class="kpi-sub" id="kpiPrioritySub">Top 20% national priority threshold</span>
-    </div>
-
-    <div class="kpi-card" id="kpiCardHealth">
-      <span class="kpi-label">Health Facilities Underserved</span>
-      <div class="kpi-value-row">
-        <span class="kpi-value" id="kpiHealth" style="color: #fb923c;">46,641</span>
-        <span class="kpi-sub">/ 51,019</span>
-      </div>
-      <span class="kpi-sub">91.4% lacking fast broadband</span>
-    </div>
-
-    <div class="kpi-card" id="kpiCardTowers">
-      <span class="kpi-label">Reached by Top <span id="kpiTowersCount">100</span> Upgrades</span>
-      <div class="kpi-value-row">
-        <span class="kpi-value" id="kpiTowersShare" style="color: #38bdf8;">7.1%</span>
-        <span class="kpi-sub">(<span id="kpiTowersPeople">3.2M</span> people)</span>
-      </div>
-      <span class="kpi-sub">Greedy maximum coverage siting</span>
-    </div>
-  </section>
-
-  <!-- Workspace: Sidebar + Map + Analytics -->
-  <main class="workspace">
-    
-    <!-- Left Sidebar: Filters & Controls -->
-    <aside class="sidebar">
-      
-      <!-- Filters -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">
-          <span>Filters</span>
-          <button class="btn-reset" id="btnResetFilters" style="width: auto; padding: 2px 8px;">Reset</button>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="zoneSelect">Geopolitical Zone</label>
-          <select id="zoneSelect">
-            <option value="ALL">All Zones (National)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="stateSelect">State</label>
-          <select id="stateSelect">
-            <option value="ALL">All States</option>
-          </select>
-        </div>
-
-        <div class="form-group slider-container">
-          <div class="slider-header">
-            <span>Min Priority Score</span>
-            <span class="slider-val" id="scoreVal">0</span>
+    <!-- Overview -->
+    <section class="view active" id="view-overview" aria-label="Overview">
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Where connectivity is weakest, and where to act first</h1>
+            <p class="page-lede">Every LGA, state and geopolitical zone is scored on how poorly it is served relative to the people, institutions and need it holds. Use the zone filter to focus the figures below.</p>
           </div>
-          <input type="range" id="scoreSlider" min="0" max="100" value="0" step="1">
-        </div>
-
-        <div class="form-group slider-container" style="margin-top: 6px;">
-          <div class="slider-header">
-            <span>Tower Shortlist (N Sites)</span>
-            <span class="slider-val" id="towerCountVal">100</span>
-          </div>
-          <input type="range" id="towerSlider" min="1" max="100" value="100" step="1">
-        </div>
-      </div>
-
-      <!-- Layer Toggles -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Map Layers</div>
-        
-        <div class="layer-toggle">
-          <label class="toggle-label">
-            <span class="layer-legend-dot" style="background: #d9582b;"></span>
-            <span>Priority Classes (LGA)</span>
-          </label>
-          <label class="switch">
-            <input type="checkbox" id="togglePriority" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="layer-toggle">
-          <label class="toggle-label">
-            <span class="layer-legend-dot" style="background: #e11d48;"></span>
-            <span>Spatial Clusters (Moran's I)</span>
-          </label>
-          <label class="switch">
-            <input type="checkbox" id="toggleClusters">
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="layer-toggle">
-          <label class="toggle-label">
-            <span class="layer-legend-dot" style="background: #0284c7;"></span>
-            <span>Top Tower Sites (Shortlist)</span>
-          </label>
-          <label class="switch">
-            <input type="checkbox" id="toggleTowers" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="layer-toggle">
-          <label class="toggle-label">
-            <span class="layer-legend-dot" style="background: #10b981;"></span>
-            <span>Health Facilities (Priority)</span>
-          </label>
-          <label class="switch">
-            <input type="checkbox" id="toggleHealth">
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="layer-toggle">
-          <label class="toggle-label">
-            <span class="layer-legend-dot" style="background: #a855f7;"></span>
-            <span>Schools (Priority)</span>
-          </label>
-          <label class="switch">
-            <input type="checkbox" id="toggleSchools">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Selected LGA Detail Inspector -->
-      <div class="sidebar-section" style="flex: 1;">
-        <div class="sidebar-title">LGA Inspector</div>
-        <div id="lgaDetailContainer" class="detail-box">
-          <p style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 20px 0;">
-            Click any LGA polygon or table row to inspect details.
-          </p>
-        </div>
-      </div>
-
-    </aside>
-
-    <!-- Center Content: Map + Tabbed Lower Analytics Panel -->
-    <section class="content-area">
-      
-      <!-- Leaflet Map Container -->
-      <div id="map"></div>
-
-      <!-- Map Floating Legend -->
-      <div class="map-legend" id="mapLegend">
-        <div class="legend-title" id="legendTitle">Priority Class</div>
-        <div id="legendItems">
-          <div class="legend-item"><span class="legend-color" style="background: var(--q5-color);"></span><span>Q5 Highest Priority (Top 20%)</span></div>
-          <div class="legend-item"><span class="legend-color" style="background: var(--q4-color);"></span><span>Q4 High Priority</span></div>
-          <div class="legend-item"><span class="legend-color" style="background: var(--q3-color);"></span><span>Q3 Medium</span></div>
-          <div class="legend-item"><span class="legend-color" style="background: var(--q2-color);"></span><span>Q2 Moderate</span></div>
-          <div class="legend-item"><span class="legend-color" style="background: var(--q1-color);"></span><span>Q1 Lowest</span></div>
-        </div>
-      </div>
-
-      <!-- Lower Panel: Analytics & Searchable Table -->
-      <div class="bottom-panel" id="bottomPanel">
-        <div class="panel-tabs">
-          <button class="tab-btn active" data-tab="tabTable">Searchable LGA Table</button>
-          <button class="tab-btn" data-tab="tabTop20">Top 20 LGAs by Component</button>
-          <button class="tab-btn" data-tab="tabStates">State Rankings</button>
-          <button class="tab-btn" data-tab="tabSiting">Tower Siting Curve</button>
-        </div>
-
-        <!-- Tab 1: Searchable Table -->
-        <div class="tab-content active" id="tabTable">
-          <div class="table-controls">
-            <input type="text" id="tableSearch" placeholder="Search LGA or State (e.g. Kano, Dambatta)..." style="max-width: 320px;">
-            <div style="font-size: 0.75rem; color: var(--text-secondary);">
-              Showing <span id="filteredRowCount">0</span> LGAs • Click row to zoom on map
+          <div class="toolbar">
+            <div class="field" style="min-width:190px">
+              <label for="ovZone">Zone</label>
+              <select id="ovZone"></select>
             </div>
-          </div>
-          <div class="table-wrapper">
-            <table class="data-table" id="lgaTable">
-              <thead>
-                <tr>
-                  <th data-col="priority_rank">Rank ↕</th>
-                  <th data-col="lganame">LGA ↕</th>
-                  <th data-col="statename">State ↕</th>
-                  <th data-col="zone">Zone ↕</th>
-                  <th data-col="priority">Priority Score ↕</th>
-                  <th data-col="priority_class">Class ↕</th>
-                  <th data-col="population">Population ↕</th>
-                  <th data-col="underserved_share">Underserved % ↕</th>
-                  <th data-col="unmeasured_share">Unmeasured % ↕</th>
-                  <th data-col="mean_dist_tower_km">Tower Dist (km) ↕</th>
-                  <th data-col="health_underserved">Health Underserved ↕</th>
-                  <th data-col="schools_underserved">Schools Underserved ↕</th>
-                </tr>
-              </thead>
-              <tbody id="lgaTableBody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
+            <button class="btn" id="ovOpenMap">Open in map</button>
           </div>
         </div>
 
-        <!-- Tab 2: Top 20 LGAs by Component -->
-        <div class="tab-content" id="tabTop20">
-          <div style="height: 220px; width: 100%;">
-            <canvas id="top20Chart"></canvas>
-          </div>
+        <div class="notice" id="ovNotice" role="note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+          <div id="ovNoticeText"></div>
         </div>
 
-        <!-- Tab 3: State Rankings -->
-        <div class="tab-content" id="tabStates">
-          <div style="height: 220px; width: 100%;">
-            <canvas id="stateRankChart"></canvas>
-          </div>
-        </div>
+        <div class="grid kpis" id="kpis"></div>
 
-        <!-- Tab 4: Siting Curve -->
-        <div class="tab-content" id="tabSiting">
-          <div style="height: 220px; width: 100%;">
-            <canvas id="sitingCurveChart"></canvas>
-          </div>
-        </div>
+        <div class="grid cards">
+          <article class="card span-12">
+            <div class="card-head"><div><h2 class="card-title">Key findings</h2><p class="card-desc">Generated from the data in view</p></div></div>
+            <div class="card-body"><ul class="insights" id="insights"></ul></div>
+          </article>
 
+          <article class="card span-5">
+            <div class="card-head">
+              <div><h2 class="card-title">Geopolitical zones</h2><p class="card-desc">Click a bar to filter the page</p></div>
+              <div class="card-tools"><select id="zoneMetric" aria-label="Zone metric"></select></div>
+            </div>
+            <div class="card-body"><div class="chart" id="chZones"></div></div>
+          </article>
+
+          <article class="card span-7">
+            <div class="card-head">
+              <div><h2 class="card-title">State priority ranking</h2><p class="card-desc">Bar length is the priority score, split by how much each component contributes</p></div>
+              <div class="card-tools"><select id="stateCount" aria-label="Number of states"><option value="10">Top 10</option><option value="15" selected>Top 15</option><option value="37">All 37</option></select></div>
+            </div>
+            <div class="card-body"><div class="chart" id="chStates"></div><div class="legend-row" id="lgStates"></div></div>
+          </article>
+
+          <article class="card span-4">
+            <div class="card-head"><div><h2 class="card-title">Top priority LGAs</h2><p class="card-desc">Highest scores, click to open on the map</p></div></div>
+            <div class="card-body"><ul class="toplist" id="topLgas"></ul></div>
+          </article>
+
+          <article class="card span-4">
+            <div class="card-head"><div><h2 class="card-title">Settlement type and service</h2><p class="card-desc">Share of buildings by measured connection, national</p></div></div>
+            <div class="card-body"><div class="chart" id="chSettle"></div><div class="legend-row" id="lgSettle"></div></div>
+            <div class="card-foot">Hamlets and small settlements are almost entirely unmeasured.</div>
+          </article>
+
+          <article class="card span-4">
+            <div class="card-head"><div><h2 class="card-title">Distance to the nearest tower</h2><p class="card-desc">People by the average distance of their LGA</p></div></div>
+            <div class="card-body"><div class="chart" id="chDist"></div></div>
+            <div class="card-foot">Tower records are crowd-sourced and likely incomplete for 3G and 4G.</div>
+          </article>
+
+          <article class="card span-6">
+            <div class="card-head"><div><h2 class="card-title">Wealth and distance to towers</h2><p class="card-desc">Each dot is an LGA. Size is population, colour is priority class</p></div></div>
+            <div class="card-body"><div class="chart" id="chScatter"></div><div class="legend-row" id="lgScatter"></div></div>
+          </article>
+
+          <article class="card span-6">
+            <div class="card-head"><div><h2 class="card-title">Health facilities and schools without measured service</h2><p class="card-desc">Share of each type located on an unmeasured or slow tile, by zone</p></div></div>
+            <div class="card-body"><div class="chart" id="chInst"></div><div class="legend-row" id="lgInst"></div></div>
+          </article>
+
+          <article class="card span-6">
+            <div class="card-head"><div><h2 class="card-title">Upgrade shortlist reach</h2><p class="card-desc">Cumulative population within 3 km of the first N towers</p></div></div>
+            <div class="card-body"><div class="chart" id="chCurve"></div></div>
+            <div class="card-foot" id="curveFoot"></div>
+          </article>
+
+          <article class="card span-6">
+            <div class="card-head"><div><h2 class="card-title">How robust is the ranking</h2><p class="card-desc">Eight alternative rules compared with the baseline</p></div></div>
+            <div class="card-body"><div class="chart" id="chRobust"></div></div>
+            <div class="card-foot">Spearman is rank correlation with the baseline. Overlap counts how many of the baseline top 50 LGAs stay in the top 50.</div>
+          </article>
+
+          <article class="card span-12">
+            <div class="card-head"><div><h2 class="card-title">Spatial clusters of priority</h2><p class="card-desc">Local Moran's I on LGA scores. High-High LGAs are high priority surrounded by high priority neighbours</p></div></div>
+            <div class="card-body"><div class="chart" id="chCluster"></div></div>
+          </article>
+        </div>
       </div>
-
     </section>
 
+    <!-- Map -->
+    <section class="view map-view" id="view-map" aria-label="Map">
+      <aside class="side left" id="mapLeft" aria-label="Map controls">
+        <div class="side-section">
+          <h3>Area level</h3>
+          <div class="segmented" id="levelSeg" role="group" aria-label="Area level">
+            <button data-level="auto" aria-pressed="true">Auto</button>
+            <button data-level="zone" aria-pressed="false">Zones</button>
+            <button data-level="state" aria-pressed="false">States</button>
+            <button data-level="lga" aria-pressed="false">LGAs</button>
+          </div>
+          <p class="side-hint" id="levelHint">Auto switches between zones, states and LGAs as you zoom.</p>
+        </div>
+        <div class="side-section">
+          <h3>Colour by</h3>
+          <div class="field"><select id="metricSel" aria-label="Metric"></select></div>
+          <p class="side-hint" id="metricHint"></p>
+          <div class="field"><label>Classes</label>
+            <div class="segmented" id="classSeg" role="group" aria-label="Classification">
+              <button data-cls="quantile" aria-pressed="true">Quantile</button>
+              <button data-cls="equal" aria-pressed="false">Equal interval</button>
+            </div>
+          </div>
+        </div>
+        <div class="side-section">
+          <h3>Filter</h3>
+          <div class="field"><label for="fZone">Zone</label><select id="fZone"></select></div>
+          <div class="field"><label for="fState">State</label><select id="fState"></select></div>
+          <div class="field"><label>Priority class</label><div class="chips" id="fClass"></div></div>
+          <label class="check"><input type="checkbox" id="fSet"> <span>Priority set only (top 20% of LGAs)</span></label>
+          <button class="btn small" id="fReset" style="justify-self:start">Clear filters</button>
+        </div>
+        <div class="side-section">
+          <h3>Layers</h3>
+          <label class="check"><input type="checkbox" id="lyCluster"> <span>Spatial clusters (LGAs)</span></label>
+          <label class="check"><input type="checkbox" id="lySet" checked> <span>Outline priority set</span></label>
+          <label class="check"><input type="checkbox" id="lySites"> <span>Upgrade sites <span class="count" id="cSites"></span></span></label>
+          <label class="check"><input type="checkbox" id="lyHealth"> <span><span class="swatch" style="background:#d6336c;display:inline-block;margin-right:6px"></span>Health facilities <span class="count" id="cHealth"></span></span></label>
+          <label class="check"><input type="checkbox" id="lySchool"> <span><span class="swatch" style="background:#1971c2;display:inline-block;margin-right:6px"></span>Schools <span class="count" id="cSchool"></span></span></label>
+          <p class="side-hint">Facilities are those in priority-set LGAs. They load on first use.</p>
+          <label class="check"><input type="checkbox" id="lyBase"> <span>Street basemap (needs internet)</span></label>
+        </div>
+      </aside>
+
+      <div class="map-stage" id="stage">
+        <canvas id="mapCanvas" aria-label="Map of Nigeria coloured by the selected metric" role="img"></canvas>
+        <div class="map-top">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="input" id="searchBox" type="search" placeholder="Search LGA, state or zone" autocomplete="off" aria-label="Search places">
+            <div class="results" id="searchResults" hidden></div>
+          </div>
+        </div>
+        <div class="map-controls">
+          <div class="zoom-group">
+            <button class="map-btn" id="zoomIn" aria-label="Zoom in">+</button>
+            <button class="map-btn" id="zoomOut" aria-label="Zoom out">&minus;</button>
+          </div>
+          <button class="map-btn" id="zoomHome" aria-label="Reset view" title="Reset view">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          </button>
+        </div>
+        <button class="map-btn toggle-left" id="toggleLeft" aria-label="Show map controls">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M7 12h10M10 17h4"/></svg>
+        </button>
+        <div class="legend" id="legend"></div>
+        <div class="map-status"><span id="coordRead"></span><span class="scale"><i id="scaleBar"></i><span id="scaleLabel"></span></span><span id="attrib">Map data: see Method and data</span></div>
+        <div class="map-loading" id="mapLoading" hidden>Loading facilities</div>
+      </div>
+
+      <aside class="side right" id="detail" aria-label="Selection details"></aside>
+    </section>
+
+    <!-- Rankings -->
+    <section class="view" id="view-rankings" aria-label="Rankings">
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rankings</h1>
+            <p class="page-lede">Sort and filter every zone, state, LGA and the shortlisted tower upgrade sites. Download what you see as CSV.</p>
+          </div>
+          <div class="toolbar">
+            <div class="segmented" id="rkLevel" role="group" aria-label="Table level" style="width:auto">
+              <button data-rk="zone" aria-pressed="false">Zones</button>
+              <button data-rk="state" aria-pressed="false">States</button>
+              <button data-rk="lga" aria-pressed="true">LGAs</button>
+              <button data-rk="site" aria-pressed="false">Upgrade sites</button>
+            </div>
+            <button class="btn" id="rkCsv">Download CSV</button>
+          </div>
+        </div>
+        <div class="filters-row">
+          <div class="field"><label for="rkSearch">Search</label><input class="input" id="rkSearch" type="search" placeholder="Name"></div>
+          <div class="field"><label for="rkZone">Zone</label><select id="rkZone"></select></div>
+          <div class="field"><label for="rkClass">Priority class</label><select id="rkClass"></select></div>
+          <div class="field"><label for="rkCluster">Cluster</label><select id="rkCluster"></select></div>
+        </div>
+        <div class="table-wrap"><table class="data" id="rkTable"></table></div>
+        <div class="pager"><span id="rkInfo"></span><div class="pg"><button class="btn small" id="rkPrev">Previous</button><span id="rkPage"></span><button class="btn small" id="rkNext">Next</button></div></div>
+      </div>
+    </section>
+
+    <!-- Method -->
+    <section class="view" id="view-method" aria-label="Method and data">
+      <div class="page">
+        <div class="method-layout">
+          <nav class="toc" aria-label="Sections">
+            <a href="#m-question">Question</a>
+            <a href="#m-approach">Approach</a>
+            <a href="#m-index">Priority index</a>
+            <a href="#m-robust">Robustness</a>
+            <a href="#m-read">How to read the maps</a>
+            <a href="#m-limits">Limitations</a>
+            <a href="#m-sources">Data sources</a>
+            <a href="#m-files">Downloads</a>
+          </nav>
+          <div class="prose" id="methodBody"></div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- External JS Dependencies -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Main Application Logic -->
+  <div class="tip" id="tip" role="tooltip"></div>
   <script src="app.js"></script>
 </body>
 </html>
